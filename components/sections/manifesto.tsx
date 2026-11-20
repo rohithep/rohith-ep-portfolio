@@ -43,7 +43,7 @@ const MANIFESTO_LINES: ManifestoWord[][] = [
   ],
 ];
 
-const LINE_HAS_ACCENT = [false, true, true, true, false];
+const FLAT_WORDS = MANIFESTO_LINES.flat();
 
 const REAL_STATS = [
   {
@@ -80,7 +80,7 @@ export function Manifesto() {
   const statsDividerRef = useRef<HTMLDivElement>(null);
   const statsGridRef = useRef<HTMLDivElement>(null);
   const numRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const lastLineIdxRef = useRef<number>(-1);
+  const lastWordIdxRef = useRef<number>(-1);
 
   useEffect(() => {
     if (reducedMotion || !sectionRef.current) return;
@@ -106,41 +106,47 @@ export function Manifesto() {
         );
       }
 
-      // Style A: Magnetic Word Stream from the Right (Line by Line) + 1 Unclustered Scroll SFX per Line
-      const lineEls = gsap.utils.toArray<HTMLElement>(".manifesto-line");
-      if (lineEls.length && headingRef.current) {
-        const totalLines = lineEls.length;
+      // Style A: Sequential Word-by-Word Stream from Right (Line by Line) + Exact 1:1 Word Landing SFX
+      const allWordEls = gsap.utils.toArray<HTMLElement>(".manifesto-word");
+      if (allWordEls.length && headingRef.current) {
+        const totalWords = allWordEls.length;
+        const wordStep = 0.08;
+        const wordDur = 0.24;
+        const totalTlDur = (totalWords - 1) * wordStep + wordDur;
 
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: headingRef.current,
-            start: "top 88%",
-            end: "bottom 66%",
-            scrub: 0.7,
+            start: "top 86%",
+            end: "bottom 58%",
+            scrub: 0.45,
             onUpdate(self) {
-              if (self.progress <= 0.01 || self.progress >= 0.99) return;
-              const currentLineIdx = Math.min(
-                totalLines - 1,
-                Math.floor(self.progress * totalLines)
+              if (self.progress <= 0.005) {
+                lastWordIdxRef.current = -1;
+                return;
+              }
+              // Map current timeline time directly to the word currently locking into place (at ~65% of its 0.24s glide)
+              const currentTime = self.progress * totalTlDur;
+              const landedIdx = Math.min(
+                totalWords - 1,
+                Math.floor((currentTime - wordDur * 0.45) / wordStep)
               );
-              if (currentLineIdx !== lastLineIdxRef.current) {
-                lastLineIdxRef.current = currentLineIdx;
-                playSfx(
-                  LINE_HAS_ACCENT[currentLineIdx] ? "word-accent" : "word-snap"
-                );
+              if (landedIdx >= 0 && landedIdx !== lastWordIdxRef.current) {
+                lastWordIdxRef.current = landedIdx;
+                const wordObj = FLAT_WORDS[landedIdx];
+                playSfx(wordObj?.accent ? "word-accent" : "word-snap");
               }
             },
           },
         });
 
-        lineEls.forEach((lineEl, lineIdx) => {
-          const words = lineEl.querySelectorAll<HTMLElement>(".manifesto-word");
+        allWordEls.forEach((wordEl, idx) => {
           tl.fromTo(
-            words,
+            wordEl,
             {
-              x: 110,
-              y: 12,
-              rotate: 2,
+              x: 78,
+              y: 10,
+              rotate: 1.8,
               opacity: 0,
               filter: "blur(5px)",
             },
@@ -150,12 +156,11 @@ export function Manifesto() {
               rotate: 0,
               opacity: 1,
               filter: "blur(0px)",
-              stagger: 0.07,
-              duration: 0.5,
+              duration: wordDur,
               force3D: true,
               ease: "power3.out",
             },
-            lineIdx * 0.24
+            idx * wordStep
           );
         });
       }

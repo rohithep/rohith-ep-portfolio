@@ -119,8 +119,8 @@ export function playSfx(type: SfxType, force = false, pitchIndex = 0) {
     click: 45,
     step: 190,
     counter: 165,
-    "word-snap": 210,
-    "word-accent": 220,
+    "word-snap": 28,
+    "word-accent": 32,
     "shutter-open": 320,
     "portal-open": 180,
     "portal-close": 180,
@@ -301,48 +301,48 @@ function synthesizeTone(
     }
 
     case "word-snap": {
-      // Tactile magnetic word-lock tick as About lines stream in from the right
+      // Crisp, ultra-short Apple-picker-wheel tactile tick (14ms) so 1:1 word-by-word scroll never clusters
       const osc = ctx.createOscillator();
       const filter = ctx.createBiquadFilter();
       const gain = ctx.createGain();
 
       osc.type = "sine";
-      osc.frequency.setValueAtTime(760, t);
-      osc.frequency.exponentialRampToValueAtTime(290, t + 0.022);
+      osc.frequency.setValueAtTime(920, t);
+      osc.frequency.exponentialRampToValueAtTime(320, t + 0.013);
 
       filter.type = "lowpass";
-      filter.frequency.setValueAtTime(1600, t);
+      filter.frequency.setValueAtTime(1750, t);
 
       gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.linearRampToValueAtTime(0.034, t + 0.002);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.024);
+      gain.gain.linearRampToValueAtTime(0.028, t + 0.0015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.015);
 
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
 
       osc.start(t);
-      osc.stop(t + 0.026);
+      osc.stop(t + 0.016);
       break;
     }
 
     case "word-accent": {
-      // Warm harmonic chime-tap when vermilion accent lines lock into place
+      // Short, warm harmonic key-lock (24ms) when vermilion accent words snap into place
       const osc = ctx.createOscillator();
       const oscHarm = ctx.createOscillator();
       const gain = ctx.createGain();
 
       osc.type = "sine";
-      osc.frequency.setValueAtTime(528, t);
-      osc.frequency.exponentialRampToValueAtTime(440, t + 0.045);
+      osc.frequency.setValueAtTime(587.33, t);
+      osc.frequency.exponentialRampToValueAtTime(440, t + 0.024);
 
       oscHarm.type = "triangle";
-      oscHarm.frequency.setValueAtTime(1056, t);
-      oscHarm.frequency.exponentialRampToValueAtTime(660, t + 0.035);
+      oscHarm.frequency.setValueAtTime(1174.66, t);
+      oscHarm.frequency.exponentialRampToValueAtTime(660, t + 0.02);
 
       gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.linearRampToValueAtTime(0.04, t + 0.003);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+      gain.gain.linearRampToValueAtTime(0.034, t + 0.002);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.026);
 
       osc.connect(gain);
       oscHarm.connect(gain);
@@ -350,8 +350,8 @@ function synthesizeTone(
 
       osc.start(t);
       oscHarm.start(t);
-      osc.stop(t + 0.052);
-      oscHarm.stop(t + 0.052);
+      osc.stop(t + 0.028);
+      oscHarm.stop(t + 0.028);
       break;
     }
 
