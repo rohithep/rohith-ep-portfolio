@@ -1,0 +1,110 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f5f4f0;
+  --surface: #eceae4;
+  --surface-elevated: #e3e0d8;
+  --section-work: #efede7;
+  --text: #111113;
+  --muted: #525258;
+  --accent: #ff4d29;
+  --highlight: #111113;
+  --border: rgba(17, 17, 19, 0.13);
+}
+
+.dark {
+  --bg: #0b0b0c;
+  --surface: #131316;
+  --surface-elevated: #1b1b1f;
+  --section-work: #0e0e11;
+  --text: #f5f4f0;
+  --muted: #a0a0aa;
+  --accent: #ff4d29;
+  --highlight: #f5f4f0;
+  --border: rgba(245, 244, 240, 0.12);
+}
+
+@layer base {
+  html {
+    background-color: var(--bg);
+    color: var(--text);
+    scroll-behavior: auto;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    overflow-x: hidden;
+    transition: background-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: var(--accent);
+    color: #ffffff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display), system-ui, sans-serif;
+}
+
+.font-mono-tech {
+  font-family: var(--font-mono), monospace;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 38s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+/* Circular Clip-Path View Transition for Theme Toggle */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: none !important;
+}
