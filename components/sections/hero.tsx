@@ -32,6 +32,8 @@ export function Hero({ ready = true }: { ready?: boolean }) {
 
     // Desktop (1024px+): Pinned "Zoom-Through" Camera Sequence
     mm.add("(min-width: 1024px)", () => {
+      let zoomPlayed = false;
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -40,6 +42,17 @@ export function Hero({ ready = true }: { ready?: boolean }) {
           pin: true,
           scrub: 0.9,
           anticipatePin: 1,
+          onUpdate(self) {
+            if (!zoomPlayed && self.progress >= 0.16 && self.progress <= 0.85) {
+              zoomPlayed = true;
+              playSfx("hero-zoom");
+            } else if (
+              zoomPlayed &&
+              (self.progress <= 0.04 || self.progress >= 0.96)
+            ) {
+              zoomPlayed = false;
+            }
+          },
         },
       });
 
@@ -110,12 +123,25 @@ export function Hero({ ready = true }: { ready?: boolean }) {
 
     // Mobile & Tablet (<1024px): Unpinned smooth split + gentle zoom
     mm.add("(max-width: 1023px)", () => {
+      let zoomPlayed = false;
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
           end: "bottom top",
           scrub: 0.8,
+          onUpdate(self) {
+            if (!zoomPlayed && self.progress >= 0.14 && self.progress <= 0.85) {
+              zoomPlayed = true;
+              playSfx("hero-zoom");
+            } else if (
+              zoomPlayed &&
+              (self.progress <= 0.04 || self.progress >= 0.96)
+            ) {
+              zoomPlayed = false;
+            }
+          },
         },
       });
 

@@ -8,6 +8,7 @@ export type SfxType =
   | "counter"
   | "word-snap"
   | "word-accent"
+  | "hero-zoom"
   | "shutter-open"
   | "portal-open"
   | "portal-close"
@@ -121,6 +122,7 @@ export function playSfx(type: SfxType, force = false, pitchIndex = 0) {
     counter: 165,
     "word-snap": 28,
     "word-accent": 32,
+    "hero-zoom": 480,
     "shutter-open": 320,
     "portal-open": 180,
     "portal-close": 180,
@@ -352,6 +354,59 @@ function synthesizeTone(
       oscHarm.start(t);
       osc.stop(t + 0.028);
       oscHarm.stop(t + 0.028);
+      break;
+    }
+
+    case "hero-zoom": {
+      // 1A: Cinematic sub-bass + airy filtered camera-zoom whoosh for Hero split/zoom-through
+      const dur = 0.34;
+
+      // Layer 1: Warm sub-bass camera push swell
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.type = "sine";
+      sub.frequency.setValueAtTime(105, t);
+      sub.frequency.exponentialRampToValueAtTime(230, t + dur * 0.48);
+      sub.frequency.exponentialRampToValueAtTime(125, t + dur);
+
+      subGain.gain.setValueAtTime(0.0001, t);
+      subGain.gain.linearRampToValueAtTime(0.045, t + dur * 0.32);
+      subGain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+      sub.connect(subGain);
+      subGain.connect(ctx.destination);
+      sub.start(t);
+      sub.stop(t + dur + 0.01);
+
+      // Layer 2: Bandpass-swept airy noise breath
+      const sampleRate = ctx.sampleRate;
+      const frameCount = Math.floor(sampleRate * dur);
+      const noiseBuffer = ctx.createBuffer(1, frameCount, sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < frameCount; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.Q.setValueAtTime(2.2, t);
+      filter.frequency.setValueAtTime(280, t);
+      filter.frequency.exponentialRampToValueAtTime(1180, t + dur * 0.45);
+      filter.frequency.exponentialRampToValueAtTime(380, t + dur);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.0001, t);
+      noiseGain.gain.linearRampToValueAtTime(0.026, t + dur * 0.35);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.start(t);
+      noise.stop(t + dur);
       break;
     }
 
