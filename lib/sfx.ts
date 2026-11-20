@@ -25,6 +25,7 @@ const PENTATONIC_SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25];
 
 let audioCtx: AudioContext | null = null;
 let sfxEnabled = true;
+let iosUnlocked = false;
 const lastPlayed: Record<string, number> = {};
 const listeners = new Set<(enabled: boolean) => void>();
 
@@ -37,9 +38,6 @@ function getAudioContext(): AudioContext | null {
         .webkitAudioContext;
     if (!Ctx) return null;
     audioCtx = new Ctx();
-  }
-  if (audioCtx.state === "suspended") {
-    audioCtx.resume().catch(() => {});
   }
   return audioCtx;
 }
@@ -86,10 +84,27 @@ export function subscribeSfx(fn: (enabled: boolean) => void): () => void {
 
 export function unlockAudioContext() {
   if (typeof window === "undefined") return;
-  if (!audioCtx) {
-    getAudioContext();
-  } else if (audioCtx.state === "suspended") {
-    audioCtx.resume().catch(() => {});
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  if (ctx.state !== "running") {
+    ctx.resume().catch(() => {});
+  }
+
+  // Play a 1-sample silent buffer once on iOS Safari / Android Chrome to unlock Web Audio for subsequent scroll triggers
+  if (!iosUnlocked) {
+    try {
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
+      if (ctx.state === "running") {
+        iosUnlocked = true;
+      }
+    } catch {
+      // ignore unlock errors
+    }
   }
 }
 
@@ -121,8 +136,29 @@ export function playSfx(type: SfxType, force = false, pitchIndex = 0) {
   lastPlayed[type] = nowMs;
 
   const ctx = getAudioContext();
-  if (!ctx || ctx.state !== "running") return;
+  if (!ctx) return;
 
+  if (ctx.state !== "running") {
+    ctx
+      .resume()
+      .then(() => {
+        if (ctx.state === "running") {
+          iosUnlocked = true;
+          synthesizeTone(ctx, type, pitchIndex);
+        }
+      })
+      .catch(() => {});
+    return;
+  }
+
+  synthesizeTone(ctx, type, pitchIndex);
+}
+
+function synthesizeTone(
+  ctx: AudioContext,
+  type: SfxType,
+  pitchIndex: number
+) {
   const t = ctx.currentTime;
 
   switch (type) {

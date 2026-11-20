@@ -43,7 +43,7 @@ const MANIFESTO_LINES: ManifestoWord[][] = [
   ],
 ];
 
-const FLAT_WORDS = MANIFESTO_LINES.flat();
+const LINE_HAS_ACCENT = [false, true, true, true, false];
 
 const REAL_STATS = [
   {
@@ -80,7 +80,7 @@ export function Manifesto() {
   const statsDividerRef = useRef<HTMLDivElement>(null);
   const statsGridRef = useRef<HTMLDivElement>(null);
   const numRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const lastWordIdxRef = useRef<number>(-1);
+  const lastLineIdxRef = useRef<number>(-1);
 
   useEffect(() => {
     if (reducedMotion || !sectionRef.current) return;
@@ -106,10 +106,10 @@ export function Manifesto() {
         );
       }
 
-      // Style A: Magnetic Word Stream from the Right (Line by Line) + Scroll SFX
+      // Style A: Magnetic Word Stream from the Right (Line by Line) + 1 Unclustered Scroll SFX per Line
       const lineEls = gsap.utils.toArray<HTMLElement>(".manifesto-line");
       if (lineEls.length && headingRef.current) {
-        const totalWords = FLAT_WORDS.length;
+        const totalLines = lineEls.length;
 
         const tl = gsap.timeline({
           scrollTrigger: {
@@ -119,14 +119,15 @@ export function Manifesto() {
             scrub: 0.7,
             onUpdate(self) {
               if (self.progress <= 0.01 || self.progress >= 0.99) return;
-              const currentWordIdx = Math.min(
-                totalWords - 1,
-                Math.floor(self.progress * totalWords)
+              const currentLineIdx = Math.min(
+                totalLines - 1,
+                Math.floor(self.progress * totalLines)
               );
-              if (currentWordIdx !== lastWordIdxRef.current) {
-                lastWordIdxRef.current = currentWordIdx;
-                const wordObj = FLAT_WORDS[currentWordIdx];
-                playSfx(wordObj?.accent ? "word-accent" : "word-snap");
+              if (currentLineIdx !== lastLineIdxRef.current) {
+                lastLineIdxRef.current = currentLineIdx;
+                playSfx(
+                  LINE_HAS_ACCENT[currentLineIdx] ? "word-accent" : "word-snap"
+                );
               }
             },
           },
@@ -178,12 +179,11 @@ export function Manifesto() {
         );
       }
 
-      // Real Stat Number Counters + Counter Tick SFX
+      // Real Stat Number Counters (visual count-up only; sound is hover-only via data-sfx="card" so it never collides with paragraph scroll SFX)
       REAL_STATS.forEach((stat, idx) => {
         const el = numRefs.current[idx];
         if (!el) return;
         const counter = { val: stat.from };
-        let prevRounded = stat.from;
         gsap.to(counter, {
           val: stat.to,
           duration: 1.4,
@@ -195,13 +195,6 @@ export function Manifesto() {
           },
           onUpdate: () => {
             const rounded = Math.round(counter.val);
-            if (rounded !== prevRounded) {
-              prevRounded = rounded;
-              // Drive counter ticks from the 10-step 2016->2026 counter so every step ticks cleanly
-              if (idx === 2 || idx === 0) {
-                playSfx("counter");
-              }
-            }
             el.textContent =
               (stat.pad
                 ? String(rounded).padStart(stat.pad, "0")
@@ -245,11 +238,10 @@ export function Manifesto() {
                     <span
                       key={wordIdx}
                       data-sfx="hover"
-                      className={`manifesto-word mr-[0.26em] inline-block cursor-default transition-colors duration-200 will-change-transform ${
-                        word.accent
-                          ? "text-[var(--accent)]"
-                          : "text-[var(--text)] hover:text-[var(--accent)]"
-                      }`}
+                      className={`manifesto-word mr-[0.26em] inline-block cursor-default transition-colors duration-200 will-change-transform ${word.accent
+                        ? "text-[var(--accent)]"
+                        : "text-[var(--text)] hover:text-[var(--accent)]"
+                        }`}
                     >
                       {word.text}
                     </span>

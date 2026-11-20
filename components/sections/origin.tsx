@@ -110,6 +110,7 @@ export function Origin() {
               start: "top 90%",
               end: "top 62%",
               scrub: 0.7,
+              onEnter: () => playSfx("step"),
             },
           }
         );
@@ -177,31 +178,28 @@ export function Origin() {
                   className="flex items-center gap-2 text-xs transition-colors duration-300"
                 >
                   <span
-                    className={`h-2 w-2 rounded-full transition-all duration-300 ${
-                      isCurrent
-                        ? "scale-125 bg-[var(--accent)]"
-                        : isReached
-                          ? "bg-[var(--text)]"
-                          : "bg-[var(--border)]"
-                    }`}
+                    className={`h-2 w-2 rounded-full transition-all duration-300 ${isCurrent
+                      ? "scale-125 bg-[var(--accent)]"
+                      : isReached
+                        ? "bg-[var(--text)]"
+                        : "bg-[var(--border)]"
+                      }`}
                   />
                   <span
-                    className={`font-mono-tech ${
-                      isCurrent
-                        ? "font-semibold text-[var(--accent)]"
-                        : isReached
-                          ? "text-[var(--text)]"
-                          : "text-[var(--muted)]"
-                    }`}
+                    className={`font-mono-tech ${isCurrent
+                      ? "font-semibold text-[var(--accent)]"
+                      : isReached
+                        ? "text-[var(--text)]"
+                        : "text-[var(--muted)]"
+                      }`}
                   >
                     {item.id}
                   </span>
                   <span
-                    className={`truncate ${
-                      isCurrent
-                        ? "font-medium text-[var(--text)]"
-                        : "text-[var(--muted)]"
-                    }`}
+                    className={`truncate ${isCurrent
+                      ? "font-medium text-[var(--text)]"
+                      : "text-[var(--muted)]"
+                      }`}
                   >
                     {SHORT_LABELS[idx] ?? item.title}
                   </span>
@@ -226,11 +224,10 @@ export function Origin() {
             return (
               <article
                 key={item.id}
-                className={`origin-card relative flex w-[430px] shrink-0 flex-col justify-between rounded-2xl border p-8 transition-all duration-500 xl:w-[460px] ${
-                  isActive
-                    ? "border-[var(--accent)]/55 bg-[var(--surface)] shadow-sm"
-                    : "border-[var(--border)] bg-[var(--surface)]/45 opacity-75 hover:opacity-100"
-                }`}
+                className={`origin-card relative flex w-[430px] shrink-0 flex-col justify-between rounded-2xl border p-8 transition-all duration-500 xl:w-[460px] ${isActive
+                  ? "border-[var(--accent)]/55 bg-[var(--surface)] shadow-sm"
+                  : "border-[var(--border)] bg-[var(--surface)]/45 opacity-75 hover:opacity-100"
+                  }`}
               >
                 <div>
                   {/* Top Row: Period Badge & Giant Step Number */}
@@ -239,11 +236,10 @@ export function Origin() {
                       {item.period}
                     </span>
                     <span
-                      className={`font-display text-4xl font-bold leading-none tracking-tight transition-colors duration-300 ${
-                        isActive
-                          ? "text-[var(--accent)]"
-                          : "text-[var(--muted)]/35"
-                      }`}
+                      className={`font-display text-4xl font-bold leading-none tracking-tight transition-colors duration-300 ${isActive
+                        ? "text-[var(--accent)]"
+                        : "text-[var(--muted)]/35"
+                        }`}
                     >
                       {item.id}
                     </span>
