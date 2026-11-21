@@ -36,7 +36,7 @@ export const SITE_CONFIG = {
   tagline: "I turn ideas into intelligent products.",
   pitch:
     "MCA 2026 graduate building AI applications, full-stack web platforms, and high-converting e-commerce systems. Open to full-time roles (relocatable) and remote freelance projects.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://rohith-ep.vercel.app",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://rohithep.online",
   email: "rohith.ep.dev@gmail.com",
   github: "https://github.com/rohithep",
   linkedin: "https://linkedin.com/in/rohith-ep",
